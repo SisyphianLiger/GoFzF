@@ -3,7 +3,7 @@ Hello there! my name is Ryan Williams, a Software Developer who loves making CLI
 
 This project is heavily, (if not entirely), inspired by `FzF` a fuzzy finder created in Golang some years back where one is able to find and navigate into files within the terminal with ease. 
 
-This is the second iteration of my project, I aleady have [https://github.com/SisyphianLiger/OFinder](Ofinder) an Ocaml version of this project. But 
+This is the second iteration of my project, I aleady have [Ofinder](https://github.com/SisyphianLiger/OFinder) an Ocaml version of this project. But 
 
 So...why the rewrite?
 
