@@ -594,4 +594,139 @@ bridge := func(done <-chan interface{}, chanStream <-chan <-chan interface{}, )
 2. loop that pulls channels off the chan stream providing them to a nested loop for use
 3. The loop reads values off the channel given and repeats those values to valStream. if the stream is closed then we break out of the loop performing the reads from this channel and continue with the next iteration of the loop, selecting channels to read from. 
 
+## Queing
+Accepting work for your pipeline even though the pipeline is not yet ready for more
+
+Once your stage has completed some work, it stores it in a temporary location in memory so that other stages can retreive it later and your stage doesn't need to hold oa ref to it
+
+
+#### CAVEAT
+Adding a que prematurely can hide synchronization issues such as deadlocks, livelocks, and more
+
+### When do we use a queue?
+A cue will almost never speed up the total runtime of your program; it will only allow the program to behave differently
+
+```Go
+done := make(chan interface{})
+defer close(done)
+
+zeros := take(done, 3, repeat(done, 0))
+short := sleep(done, 1*time.Second, zeros)
+long := sleep(done, 4*time.Second, short)
+pipeline := long
+
+```
+
+The pipeline does the following
+1. repeats stage that generates endless streams of 0s
+2. Stage that cancels the previous stages after seeing three items
+3. a short stage that sleeps one second
+4. a long stage that sleeps four seconds
+
+We use a que here, because it provides a sense of "linearity" where here, we can process the short timeframe, with a que quicker than letting everything go all at once. But not from a performance perspective but rather an ordering perspective.
+
+### Applicability of Queues
+1. If batching requests in a stage saves time
+    - I.E. Sending from In memory to Disk
+2. If delays in a stage produce a feedback loop into the system
+    - negative feedback loop --> downdward spireals that exist because the recurrent relation exists between 
+        the pipeline and its upstream systems; the rate at which upstream stages or systems submit new requests is somehow linked to how effificent the pipeline is
+
+### Little's Law
+The law of queuing that predits the through-put of your pipeline
+1. L = the average number of units in the system
+2. λ = the average arrival rate of units
+3. W = the average time a unit spends in the system
+
+The equation ONLY applies to stable systems
+
+A stable system: one in which the rate that work enters the pipeline, or ingress, is equal to the rate in which it exits the system, egress
+
+### How can we decrease W?
+The average time a unit spends in the system by a factor of n, we can ONLY decrease the average number of units in the system: 
+`L/n = λ * W/n`
+
+### If we increase L (via queues)
+We add queues to our stages, which either increases the arival rate of units:
+`nL = nλ * W`
+Or Increases the average time a unit spends in the system
+`nL = λ * nW`
+
+### If we reduce W
+
+`L = λEiWi`
+
+Where Ei is the sum of Wi where i is the amount
+
+To further it, your pipeline will only be as fast as your slowest stage.
+
+## The context Package
+This is a <-done channel with extra bells and whistles
+
+### Context type
+```Go
+type Context interface {
+    // Deadline returns the time when work done on behalf of this
+    // context should be canceled. Deadline returns ok==false when no
+    // deadline is set. Successive calls to Deadline return the same
+    // results.
+    Deadline() (deadline time.Time, ok bool)
+    // Done returns a channel that's closed when work done on behalf
+    // of this context should be canceled. Done may return nil if this
+    // context can never be canceled. Successive calls to Done return
+    // the same value.
+    Done() <-chan struct{}
+    // Err returns a non-nil error value after Done is closed. Err
+    // returns Canceled if the context was canceled or
+    // DeadlineExceeded if the context's deadline passed. No other
+    // values for Err are defined. After Done is closed, successive
+    // calls to Err return the same value.
+    Err() error
+    // Value returns the value associated with this context for key,
+    // or nil if no value is associated with key. Successive calls to
+    // Value with the same key returns the same result.
+    Value(key interface{}) interface{}
+}
+```
+
+#### Two Purposes of Context
+1. Provide an API for cancelling branches of your call-graph
+2. Provide a data-bag for transporting request-scoped data through your call-graph.
+
+### Cancelling Context Types
+The context package helps manage all three ways a gouroutine gets terminated
+
+The context type will be the first arg of your function, and there is nothing present in your state. 
+And there is nothing that allows the funcion accepting Context to cancel it. Meaning that Context type is able to be protected from children cenceling the context. That and the done method provides a way to match all three requirments to terminating a goroutine.
+
+### Contexts are immutable how can we affect the behavior
+Take a look at the functions
+
+```Go
+func WithCancel(parent Context) (ctx Context, cancel CancelFunc)
+func WithDeadline(parent Context, deadline time.Time) (Context, CancelFunc)
+func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc)
+```
+
+`WithCancel:` returns a new Context that closes its done channel when the returned cancel function is called
+`WithDeadline:` returns a new Context that closes its done channel when the machines clock advances past a given deadline
+`WithTimeout:` returns a new context that closes its dones channel after the given timeout duration
+
+Contexts are meant to flow through your programs call-graph. 
+
+### Some contexts you can use (not for prod)
+```Go
+func Background() Context
+func TODO() Context
+```
+`Background:` returns an empty Context
+`TODO:`not meant for production but also returns an empty Context and is intended as a placeholder
+
+### Rules for storing data in a Context
+1. The data should transit process or API boundaries
+2. The data should be immutable
+3. The data should be data, not types with methods
+4. The data should trend toward simple types
+5. The data should help decorate operations not drive them
+
 
