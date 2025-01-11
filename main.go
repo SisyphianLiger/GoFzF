@@ -4,33 +4,48 @@ import (
 	"fmt"
 	"os"
 
+	// "os/exec"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
-/*
-Define a model:
-*/
+
+var (
+    selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+)
 
 
+// Need to be able to highlight selected option...
 
+type mapandindex struct {
+    FilandDirMap map[int]struct{}   // which to-do items are selected
+    idx int // current location of cursor
+}
 
 
 type model struct {
-    choices  []string           // items on the to-do list
-    cursor   int                // which to-do list item our cursor is pointing at
-    selected map[int]struct{}   // which to-do items are selected
+    FilesAndDirectories  []string           // items on the to-do list
+    mapandindex // embedded to reduce clutter
 }
 
-func initialModel() model {
+type Data func() []string
+/*
+    fakeData() is to be replaced with data from the pipeline
+*/
+func initialModel(fn Data) model {
+    mapoffile := mapandindex{ 
+                    FilandDirMap:make(map[int]struct{}),
+                    idx: len(fn()) - 1, 
+    }
 	return model{
-		// Our to-do list is a grocery list
-		choices:  fakeData(),
+            // Our to-do list is a grocery list
+            FilesAndDirectories:  fn(),
 
-		// A map which indicates which choices are selected. We're using
-		// the map like a mathematical set. The keys refer to the indexes
-		// of the `choices` slice, above.
-		selected: make(map[int]struct{}),
-	}
+            // A map which indicates which FilesAndDirectories are FilandDirMap. We're using
+            // the map like a mathematical set. The keys refer to the indexes
+            // of the `FilesAndDirectories` slice, above.
+            mapandindex: mapoffile,
+        }
 }
 
 func (m model) Init() tea.Cmd {
@@ -53,24 +68,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
         // The "up" and "k" keys move the cursor up
         case "up", "k":
-            if m.cursor > 0 {
-                m.cursor--
+            if m.idx > 0 {
+                m.idx--
             }
 
         // The "down" and "j" keys move the cursor down
         case "down", "j":
-            if m.cursor < len(m.choices)-1 {
-                m.cursor++
+            if m.idx < len(m.FilesAndDirectories)-1 {
+                m.idx++
             }
 
         // The "enter" key and the spacebar (a literal space) toggle
-        // the selected state for the item that the cursor is pointing at.
+        // the FilandDirMap state for the item that the cursor is pointing at.
         case "enter", " ":
-            _, ok := m.selected[m.cursor]
+            _, ok := m.FilandDirMap[m.idx]
             if ok {
-                delete(m.selected, m.cursor)
+                delete(m.FilandDirMap, m.idx)
             } else {
-                m.selected[m.cursor] = struct{}{}
+                m.FilandDirMap[m.idx] = struct{}{}
             }
         }
     }
@@ -82,38 +97,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
     // The header
-    s := "What should we buy at the market?\n\n"
+    s := "Files and Directories\n\n"
 
-    // Iterate over our choices
-    for i, choice := range m.choices {
+    // Iterate over our FilesAndDirectories
+    for i, fileordir := range m.FilesAndDirectories {
 
-        // Is the cursor pointing at this choice?
+        // Is the cursor pointing at this fileordir?
         cursor := " " // no cursor
-        if m.cursor == i {
+        if m.idx == i {
             cursor = ">" // cursor!
-        }
-
-        // Is this choice selected?
-        checked := " " // not selected
-        if _, ok := m.selected[i]; ok {
-            checked = "x" // selected!
+            selectedItemStyle.Render(cursor + " " + fileordir)
         }
 
         // Render the row
-        s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+        s += fmt.Sprintf("%s %s\n", cursor, fileordir)
     }
 
     // The footer
-    s += "\nPress q to quit.\n"
+    s += "\nPress q or ctrl+c to quit.\n"
 
     // Send the UI for rendering
     return s
 }
 
 func main() {
-    p := tea.NewProgram(initialModel())
+
+    clearScreen()
+    p := tea.NewProgram(initialModel(fakeData))
     if _, err := p.Run(); err != nil {
-        fmt.Printf("Alas, there's been an error: %v", err)
+        fmt.Printf("Error found: %v", err)
         os.Exit(1)
     }
 }
