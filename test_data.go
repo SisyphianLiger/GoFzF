@@ -1,40 +1,77 @@
 package main
 
-func fakeData() []string {
-	return []string{
-		"docs/project_notes.txt",
-		"src/main.go",
-		"src/utils/helper.go",
-		"images/profile.jpg",
-		"images/vacation/beach.jpg",
-		"images/vacation/mountains.jpg",
-		"downloads/book.pdf",
-		"music/favorites/song.mp3",
-		"videos/lectures/golang.mp4",
-		".git/config",
-		"README.md", 
-		"go.mod",
-		"cmd/app/main.go",
-		"pkg/finder/fuzzy.go",
-		"tests/finder_test.go",
-		"docs/api/endpoints.md",
-		"config/settings.json",
-		"assets/css/style.css",
-		"scripts/build.sh",
-		"docker/Dockerfile",
-		"vendor/external/lib.go",
-		"LICENSE",
-		"CONTRIBUTING.md",
-		"pkg/models/user.go",
-		"cmd/cli/flags.go",
-		"internal/cache/memory.go",
-		"deploy/kubernetes/pod.yaml",
-		"website/index.html",
-		"logs/app.log",
-		"scripts/test.sh",
-		"pkg/database/postgres.go",
-		"docs/architecture.drawio",
-		"assets/images/logo.png",
-		"tools/generator/main.go",
+import (
+	"github.com/charmbracelet/bubbles/list"
+)
+
+type FilesAndDir struct {
+	file string
+	dir string
+	folder int
+}
+
+func (fnd FilesAndDir) FilterValue() string { return string(fnd.folder) }
+
+func (fnd FilesAndDir) fileName() string { return fnd.file }
+func (fnd FilesAndDir) dirName() string { return fnd.dir }
+func (fnd FilesAndDir) folderNumber() int { return fnd.folder }
+
+func fakeData() []list.Item {
+	return []list.Item{
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+		FilesAndDir{ file: "", dir: "docs/project_notes.txt", folder: 1 },
+	}
+}
+
+
+func MainMenu() []list.Item {
+	return []list.Item{
+		MenuOption{ title: "Start Searching"},
+		MenuOption{ title: "Configuration Options"},
+		MenuOption{ title: "Color Schemes"},
+		MenuOption{ title: "Quit"},
 	}
 }

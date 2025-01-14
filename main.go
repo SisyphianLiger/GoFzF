@@ -1,131 +1,130 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
-	// "os/exec"
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
-
-var (
-    selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
-)
-
-
-// Need to be able to highlight selected option...
-
-type mapandindex struct {
-    FilandDirMap map[int]struct{}   // which to-do items are selected
-    idx int // current location of cursor
-}
-
-
-type model struct {
-    FilesAndDirectories  []string           // items on the to-do list
-    mapandindex // embedded to reduce clutter
-}
-
-type Data func() []string
 /*
-    fakeData() is to be replaced with data from the pipeline
+   This will be the main Menu. Will Be uploaded when for the Users Fist Experience
+   After the first run the User should should be able to access it from the help menu with H
 */
-func initialModel(fn Data) model {
-    mapoffile := mapandindex{ 
-                    FilandDirMap:make(map[int]struct{}),
-                    idx: len(fn()) - 1, 
-    }
-	return model{
-            // Our to-do list is a grocery list
-            FilesAndDirectories:  fn(),
+type status int
 
-            // A map which indicates which FilesAndDirectories are FilandDirMap. We're using
-            // the map like a mathematical set. The keys refer to the indexes
-            // of the `FilesAndDirectories` slice, above.
-            mapandindex: mapoffile,
-        }
+const (
+
+)
+type MenuOption struct {
+	number int
+	title string
+	description string 
 }
 
-func (m model) Init() tea.Cmd {
-    // Just return `nil`, which means "no I/O right now, please."
-    return nil
+func (menu MenuOption) FilterValue() string {
+	return menu.title
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-    switch msg := msg.(type) {
-
-    // Is it a key press?
-    case tea.KeyMsg:
-
-        // Cool, what was the actual key pressed?
-        switch msg.String() {
-
-        // These keys should exit the program.
-        case "ctrl+c", "q":
-            return m, tea.Quit
-
-        // The "up" and "k" keys move the cursor up
-        case "up", "k":
-            if m.idx > 0 {
-                m.idx--
-            }
-
-        // The "down" and "j" keys move the cursor down
-        case "down", "j":
-            if m.idx < len(m.FilesAndDirectories)-1 {
-                m.idx++
-            }
-
-        // The "enter" key and the spacebar (a literal space) toggle
-        // the FilandDirMap state for the item that the cursor is pointing at.
-        case "enter", " ":
-            _, ok := m.FilandDirMap[m.idx]
-            if ok {
-                delete(m.FilandDirMap, m.idx)
-            } else {
-                m.FilandDirMap[m.idx] = struct{}{}
-            }
-        }
-    }
-
-    // Return the updated model to the Bubble Tea runtime for processing.
-    // Note that we're not returning a command.
-    return m, nil
+func (menu MenuOption) Title() string {
+	return menu.title
 }
 
-func (m model) View() string {
-    // The header
-    s := "Files and Directories\n\n"
+func (menu MenuOption) Description() string {
+	return menu.description
+}
 
-    // Iterate over our FilesAndDirectories
-    for i, fileordir := range m.FilesAndDirectories {
 
-        // Is the cursor pointing at this fileordir?
-        cursor := " " // no cursor
-        if m.idx == i {
-            cursor = ">" // cursor!
-            selectedItemStyle.Render(cursor + " " + fileordir)
-        }
+type Model struct {
+	list list.Model
+	err error
+	focus status
+	quit bool 
+}
 
-        // Render the row
-        s += fmt.Sprintf("%s %s\n", cursor, fileordir)
-    }
+func New() *Model{
+	return &Model{}
+}
 
-    // The footer
-    s += "\nPress q or ctrl+c to quit.\n"
+// TODO: ADD FUNCTIONALITY HERE
+func (m *Model) SelectDown()  {
+	if m.focus == 3 {
+		m.focus = status(3)
+		return
+	}
+	m.focus++
+	return
+}
 
-    // Send the UI for rendering
-    return s
+func (m *Model) SelectUp()  {
+	if m.focus == 0 {
+		m.focus = status(0)
+		return
+	}
+	m.focus--
+	return
+}
+
+type Data func() []list.Item
+
+func (m *Model) initMenuList(width, height int, fn Data) {
+	m.list = list.New([]list.Item{}, list.NewDefaultDelegate(), width, height)
+	m.list.Title = "Main Menu"
+	m.list.SetItems(fn())
+}
+
+func (m Model) Init() tea.Cmd {
+	return nil
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.initMenuList(msg.Width, msg.Height, MainMenu)
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "j", "down":
+			m.SelectDown()
+		case "k", "up":
+			m.SelectUp()
+		case "enter":
+
+			if m.focus == 0 {
+			
+			}
+			if m.focus == 1 {
+			
+			}
+			if m.focus == 2 {
+			
+			}
+			if m.focus == 3 {
+				m.quit = true
+				return m, tea.Quit
+			}
+		}
+
+	}
+
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
+}
+
+func (m Model) View() string {
+	// When we exit the program we make sure to render nothing to the screen 
+	// therefore it will return to normal
+	if m.quit == true {
+		return ""
+	}
+
+	return m.list.View()
 }
 
 func main() {
-
-    clearScreen()
-    p := tea.NewProgram(initialModel(fakeData))
-    if _, err := p.Run(); err != nil {
-        fmt.Printf("Error found: %v", err)
-        os.Exit(1)
-    }
+	m := New()
+	p := tea.NewProgram(m)
+	if _,err := p.Run(); err != nil {
+		os.Exit(1)
+	}
 }
