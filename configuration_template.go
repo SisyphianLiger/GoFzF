@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/charmbracelet/lipgloss"
+	"github.com/common-nighthawk/go-figure"
 	"strings"
 )
 
@@ -32,23 +33,29 @@ var (
 			Foreground(lipgloss.Color("#FFF7DB")).
 			SetString("Lip Gloss")
 
-	descStyle = base.MarginTop(1).
-			Align(lipgloss.Center)
-
-	infoStyle = base.
-			BorderStyle(lipgloss.NormalBorder()).
-			BorderTop(true).
-			BorderForeground(subtle)
 )
 
-func ConfigurationTitle(builder *strings.Builder) *strings.Builder {
-	var title strings.Builder
+func ConfigurationTitle(builder *strings.Builder, width int) *strings.Builder {
+
+	descStyle := base.MarginTop(2).
+			Align(lipgloss.Center).
+			Width(width)
+
+	infoStyle := base.
+			BorderStyle(lipgloss.NormalBorder()).
+			BorderTop(true).
+			BorderForeground(subtle).
+			Width(width).
+			Align(lipgloss.Center)
+
+	title := figure.NewFigure("CONFIGURATION", "", true)
+
 	desc := lipgloss.JoinVertical(lipgloss.Left,
-		descStyle.Render("Configuration Options:"),
+		descStyle.Render(title.String()),
 		infoStyle.Render("Customize Color Scheme, Editor Loading and other Defaults"),
 	)
 
-	row := lipgloss.JoinHorizontal(lipgloss.Top, title.String(), desc)
+	row := lipgloss.JoinHorizontal(lipgloss.Top, desc)
 	builder.WriteString(row + "\n\n")
 
 	return builder
@@ -61,7 +68,7 @@ Step One: Create the document that will hold the "strings"
 func CreateConfigurationTemplate(width, height int) string {
 	doc := strings.Builder{}
 
-	ConfigurationTitle(&doc)
+	ConfigurationTitle(&doc, width)
 	docStyle := lipgloss.NewStyle().Padding(1, 2, 1, 2)
 
 	return docStyle.Render(doc.String())
