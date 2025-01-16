@@ -4,13 +4,14 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 )
 
-type status int
-
 type MenuOption struct {
 	number      int
 	title       string
 	description string
 }
+
+type status int
+type Data func() []list.Item
 
 func (menu MenuOption) FilterValue() string {
 	return menu.title

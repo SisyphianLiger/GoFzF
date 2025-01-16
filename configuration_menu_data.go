@@ -4,6 +4,12 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 )
 
+type ConfigurationChoices struct {
+	width              int
+	height             int
+	ConfigurationFocus status
+}
+
 type Toggle struct {
 	on        bool
 	choiceOne string

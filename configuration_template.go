@@ -13,8 +13,7 @@ var (
 	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
 	highlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
 	special   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
-
-	base = lipgloss.NewStyle().Foreground(normal)
+	base      = lipgloss.NewStyle().Foreground(normal)
 
 	divider = lipgloss.NewStyle().
 		SetString("•").
@@ -23,30 +22,20 @@ var (
 		String()
 
 	url = lipgloss.NewStyle().Foreground(special).Render
-
-	// Title Styling
-	titleStyle = lipgloss.NewStyle().
-			MarginLeft(1).
-			MarginRight(5).
-			Padding(0, 1).
-			Italic(true).
-			Foreground(lipgloss.Color("#FFF7DB")).
-			SetString("Lip Gloss")
-
 )
 
 func ConfigurationTitle(builder *strings.Builder, width int) *strings.Builder {
 
 	descStyle := base.MarginTop(2).
-			Align(lipgloss.Center).
-			Width(width)
+		Align(lipgloss.Center).
+		Width(width)
 
 	infoStyle := base.
-			BorderStyle(lipgloss.NormalBorder()).
-			BorderTop(true).
-			BorderForeground(subtle).
-			Width(width).
-			Align(lipgloss.Center)
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderTop(true).
+		BorderForeground(subtle).
+		Width(width).
+		Align(lipgloss.Center)
 
 	title := figure.NewFigure("CONFIGURATION", "", true)
 
@@ -61,6 +50,32 @@ func ConfigurationTitle(builder *strings.Builder, width int) *strings.Builder {
 	return builder
 }
 
+func ConfigurationOptions(builder *strings.Builder, width int) *strings.Builder {
+
+	buttonStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#FFF7DB")).
+		Background(lipgloss.Color("#888B7E")).
+		Padding(0, 3).
+		MarginTop(1)
+
+	activeButtonStyle := buttonStyle.
+		Foreground(lipgloss.Color("#FFF7DB")).
+		Background(lipgloss.Color("#F25D94")).
+		MarginRight(2).
+		Underline(true)
+
+	mainMenu := activeButtonStyle.Render("MainMenu")
+	searching := buttonStyle.Render("Searching")
+
+	question := lipgloss.NewStyle().Width(width).Align(lipgloss.Left).Render("Startup Options: ")
+	buttons := lipgloss.JoinHorizontal(lipgloss.Center, mainMenu, searching)
+
+	ui := lipgloss.JoinVertical(lipgloss.Right, question, buttons)
+
+	builder.WriteString(ui + "\n\n")
+	return builder
+}
+
 /*
 Step One: Create the document that will hold the "strings"
 */
@@ -69,6 +84,7 @@ func CreateConfigurationTemplate(width, height int) string {
 	doc := strings.Builder{}
 
 	ConfigurationTitle(&doc, width)
+	ConfigurationOptions(&doc, width)
 	docStyle := lipgloss.NewStyle().Padding(1, 2, 1, 2)
 
 	return docStyle.Render(doc.String())
