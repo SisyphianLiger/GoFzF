@@ -5,6 +5,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+
+type StateResult struct {
+	status status
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.startUp(msg)
@@ -12,7 +17,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.state {
 	case MainMenu:
 		m.MainMenuState(msg)
-		if m.MainMenuBranch(msg) {
+
+		if m.MainMenuBranch(msg).status == Quit {
 			return m, tea.Quit	
 		}
 
@@ -52,7 +58,7 @@ func (m *Model) MainMenuState(msg tea.Msg) {
 }
 
 
-func (m *Model) MainMenuBranch(msg tea.Msg) bool {
+func (m *Model) MainMenuBranch(msg tea.Msg) StateResult {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -66,7 +72,7 @@ func (m *Model) MainMenuBranch(msg tea.Msg) bool {
 
 		case "q":
 			m.state = Quit
-			return true
+			return StateResult{ status: Quit }
 
 		case "enter":
 			if m.mainMenuFocus == Searching {
@@ -80,11 +86,10 @@ func (m *Model) MainMenuBranch(msg tea.Msg) bool {
 
 			if m.mainMenuFocus == Quit {
 				m.state = Quit
-				return true
+				return StateResult{ status: Quit }
 			}
 		}
 	}
 
-	return false
-
+	return StateResult{}
 }
