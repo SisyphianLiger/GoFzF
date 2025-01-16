@@ -1,10 +1,36 @@
 package main
 
 import (
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
+	m.startUp(msg)
+
+	switch m.state {
+	case MainMenu:
+		m.MainMenuState(msg)
+		if m.MainMenuBranch(msg) {
+			return m, tea.Quit	
+		}
+
+	case Searching:
+	// TODO: Loads Searching Module
+
+	case Configuration:
+	// TODO: Put Configuration into View
+
+	}
+
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
+}
+
+
+func (m *Model) startUp(msg tea.Msg) {
 
 	if !m.sizeOfScreen {
 		switch msg := msg.(type) {
@@ -14,54 +40,51 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.sizeOfScreen = true
 		}
 	}
+}
 
-	switch m.state {
-	case MainMenu:
-		// TODO: INIT Main Menu
-		if !m.intialState {
-			m.initializeList(m.width, m.height, MainMenuOptions, Searching, "Main Menu")
-			m.intialState = true
-		}
 
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch msg.String() {
-			case "j", "down":
-				m.MenuSelectDown()
-			case "k", "up":
-				m.MenuSelectUp()
-			case "q":
+func (m *Model) MainMenuState(msg tea.Msg) {
+	// TODO: INIT Main Menu
+	if !m.intialState {
+		m.initializeList(m.width, m.height, MainMenuOptions, Searching, "Main Menu")
+		m.intialState = true
+	}
+}
+
+
+func (m *Model) MainMenuBranch(msg tea.Msg) bool {
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+
+		case "j", "down":
+			m.MenuSelectDown()
+
+		case "k", "up":
+			m.MenuSelectUp()
+
+		case "q":
+			m.state = Quit
+			return true
+
+		case "enter":
+			if m.mainMenuFocus == Searching {
+				m.state = Searching
+			}
+
+			if m.mainMenuFocus == Configuration {
+				m.state = Configuration
+				m.initializeList(m.width, m.height, ConfigurationMenuData, Configuration, "Configuration")
+			}
+
+			if m.mainMenuFocus == Quit {
 				m.state = Quit
-				return m, tea.Quit
-
-			case "enter":
-				// TODO: Implement screen differences here
-				if m.mainMenuFocus == Searching {
-					m.state = Searching
-					// Logic to Search Here
-				}
-				if m.mainMenuFocus == Configuration {
-					m.state = Configuration
-					m.initializeList(m.width, m.height, ConfigurationMenuData, Configuration, "Configuration")
-				}
-				if m.mainMenuFocus == Quit {
-					m.state = Quit
-					return m, tea.Quit
-				}
+				return true
 			}
 		}
-
-	case Searching:
-	// TODO: Loads Searching Module
-
-	case Configuration:
-	// TODO: Put Configuration into View
-
-	case Quit:
-
 	}
 
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+	return false
+
 }
