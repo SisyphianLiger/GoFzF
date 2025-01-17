@@ -1,6 +1,6 @@
 package main
 
-import "log"
+// import "log"
 
 func (m Model) View() string {
 	// When we exit the program we make sure to render nothing to the screen
@@ -9,10 +9,9 @@ func (m Model) View() string {
 		return "Start Search!"
 	}
 	if m.state == Configuration {
-		return CreateConfigurationTemplate(m.width, m.height)
+		return m.CreateConfigurationTemplate(m.width, m.height)
 	}
 	if m.state == Quit {
-		log.Printf("How Many times?")
 		return ""
 	}
 

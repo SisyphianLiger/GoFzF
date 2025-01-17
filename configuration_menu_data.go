@@ -1,19 +1,17 @@
 package main
 
-import (
-	"github.com/charmbracelet/bubbles/list"
-)
+import ()
 
 type ConfigurationChoices struct {
 	width              int
 	height             int
-	ConfigurationFocus status
+	ConfigurationFocus int
+	OptionsMenu        []ButtonOptions
 }
 
-type Toggle struct {
-	on        bool
-	choiceOne string
-	choiceTwo string
+type ButtonOptions struct {
+	buttonChoice string
+	choices []string
 }
 
 // TODO: FIGURE OUT HOW INPUT WORKS...
@@ -22,18 +20,13 @@ type CustomInput struct {
 	inputBox string
 }
 
-type ButtonOptions struct {
-	buttonName string
-	Toggle
-	CustomInput
-}
-
 func (b ButtonOptions) FilterValue() string {
-	return b.buttonName
+	return b.buttonChoice
 }
 
-func ConfigurationMenuData() []list.Item {
-	return []list.Item{
-		ButtonOptions{buttonName: "MainMenu"},
+func ConfigurationMenuData() []ButtonOptions {
+	return []ButtonOptions{
+		{buttonChoice: "Choose Startup Option: ", choices: []string{"Start Search", "MainMenu"}},
+		{buttonChoice: "MainMenu"},
 	}
 }

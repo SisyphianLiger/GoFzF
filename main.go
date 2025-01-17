@@ -7,7 +7,7 @@ import (
 )
 
 /*
-	Particular Branches available in the TUI
+Particular Branches available in the TUI
 */
 const (
 	Searching     status = iota // 0
